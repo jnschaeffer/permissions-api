@@ -10,4 +10,40 @@ metadata:
     service: worker
 data:
   config.yaml: |
-    {{- pick .Values.config "server" "events" "oidc" "spicedb" "tracing" | toYaml | nindent 4 }}
+    {{- with .Values.config.spicedb }}
+    spicedb:
+      endpoint: "{{ .endpoint }}"
+      insecure: {{ .insecure }}
+      verifyCA: {{ .verifyCA }}
+      policyFile: "{{ if .policyConfigMapName }}/policy/policy.yaml{{ end }}"
+    {{- end }}
+    {{- with .Values.config.tracing }}
+    tracing:
+      enabled: {{ .enabled }}
+      provider: "{{ .provider }}"
+      jaeger:
+        endpoint: "{{ .jaeger.endpoint }}"
+        user: "{{ .jaeger.user }}"
+        password: "{{ .jaeger.password }}"
+      otlp:
+        endpoint: "{{ .otlp.endpoint }}"
+        insecure: {{ .otlp.insecure }}
+    {{- end }}
+    {{- with .Values.config.events }}
+    events:
+      topics: {{ .topics | toYaml | nindent 8 }}
+      nats:
+        url: "{{ .nats.url }}"
+        subscribePrefix: "{{ .nats.subscribePrefix }}"
+        queueGroup: "{{ .nats.queueGroup }}"
+        source: "{{ .nats.source }}"
+        connectTimeout: "{{ .nats.connectTimeout }}"
+        shutdownTimeout: "{{ .nats.connectTimeout }}"
+        subscriberFetchBatchSize: {{ .nats.subscriberFetchBatchSize }}
+        subscriberFetchBackoff: "{{ .nats.subscriberFetchBackoff }}"
+        subscriberNoAckExplicit: {{ .nats.subscriberNoAckExplicit }}
+        subscriberNoManualAck: {{ .nats.subscriberNoManualAck }}
+        subscriberDeliveryPolicy: "{{ .nats.subscriberDeliveryPolicy }}"
+        subscriberStartSequence: {{ .nats.subscriberStartSequence }}
+        credsFile: "{{ .nats.credsFile }}"
+    {{- end }}

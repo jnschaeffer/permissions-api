@@ -10,4 +10,34 @@ metadata:
     service: server
 data:
   config.yaml: |
-    {{- pick .Values.config "server" "oidc" "spicedb" "tracing" | toYaml | nindent 4 }}
+    {{- with .Values.config.server }}
+    server:
+      port: {{ .port }}
+      shutdownGracePeriod: "{{ .shutdownGracePeriod }}"
+      trustedProxies: {{ .trustedProxies }}
+    {{- end }}
+    {{- with .Values.config.oidc }}
+    oidc:
+      issuer: "{{ .issuer }}"
+      audience: "{{ .audience }}"
+      refreshTimeout: "{{ .refreshTimeout }}"
+    {{- end }}
+    {{- with .Values.config.spicedb }}
+    spicedb:
+      endpoint: "{{ .endpoint }}"
+      insecure: {{ .insecure }}
+      verifyCA: {{ .verifyCA }}
+      policyFile: "{{ if .policyConfigMapName }}/policy/policy.yaml{{ end }}"
+    {{- end }}
+    {{- with .Values.config.tracing }}
+    tracing:
+      enabled: {{ .enabled }}
+      provider: "{{ .provider }}"
+      jaeger:
+        endpoint: "{{ .jaeger.endpoint }}"
+        user: "{{ .jaeger.user }}"
+        password: "{{ .jaeger.password }}"
+      otlp:
+        endpoint: "{{ .otlp.endpoint }}"
+        insecure: {{ .otlp.insecure }}
+    {{- end }}
